@@ -4,7 +4,14 @@ AI-powered ffmpeg command generator. Describe what you want to do in natural lan
 
 ## Install
 
-Download the latest release from [GitHub Releases](https://github.com/nep-0/ffchat/releases).
+1. Download the latest release from [Releases](https://github.com/nep-0/ffchat/releases)
+2. Rename and move it to a directory in your PATH, e.g.:
+
+```bash
+mv ffchat-linux-amd64 ffchat
+chmod +x ffchat
+sudo mv ffchat /usr/local/bin/
+```
 
 ## Usage
 
