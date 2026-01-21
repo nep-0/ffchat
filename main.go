@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -46,7 +47,8 @@ func main() {
 
 	fmt.Println("Thinking...")
 
-	command, err := llmClient.GenerateFFmpegCommand(prompt)
+	var command string
+	command, err = llmClient.GenerateFFmpegCommand(prompt)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
@@ -67,16 +69,38 @@ func main() {
 
 	fmt.Printf("Generated command:\n%s\n\n", parsedCommand)
 
+	command = parsedCommand
+
 	if !noConfirm {
-		fmt.Print("Execute this command? (y/N): ")
+		for {
+			fmt.Print("Execute this command? (y/N/e): ")
 
-		var response string
-		fmt.Scanln(&response)
+			reader := bufio.NewReader(os.Stdin)
+			response, _ := reader.ReadString('\n')
+			response = strings.TrimSpace(strings.ToLower(response))
 
-		if response != "y" && response != "Y" {
-			fmt.Println("Command cancelled.")
-			return
+			if response == "y" || response == "yes" {
+				break
+			} else if response == "e" || response == "edit" {
+				fmt.Print("How do you want to modify the command? ")
+				editPrompt, _ := reader.ReadString('\n')
+				editPrompt = strings.TrimSpace(editPrompt)
+
+				command, err = llmClient.ModifyCommand(command, editPrompt)
+				if err != nil {
+					fmt.Printf("Error modifying command: %v\n", err)
+					continue
+				}
+
+				fmt.Printf("\nUpdated command:\n%s\n\n", command)
+				continue
+			} else {
+				fmt.Println("Command cancelled.")
+				return
+			}
 		}
+
+		parsedCommand = command
 	}
 
 	fmt.Println("Executing command...")
@@ -102,6 +126,11 @@ Examples:
   ffchat "convert video.mp4 to webm"
   ffchat -y "extract audio from video.mp3"
   ffchat "resize image.jpg to 800x600"
+
+Confirmation:
+  y - execute
+  e - edit (ask LLM to modify)
+  n - cancel
 
 Configuration:
   Set environment variables or create ~/.ffchat.json:

@@ -133,3 +133,14 @@ Do not use quotes around the entire command.`
 
 	return content, nil
 }
+
+func (c *Client) ModifyCommand(originalCommand, editPrompt string) (string, error) {
+	prompt := fmt.Sprintf(`Given this ffmpeg command:
+%s
+
+Modify it according to this instruction: %s
+
+Output ONLY the modified ffmpeg command, nothing else.`, originalCommand, editPrompt)
+
+	return c.GenerateFFmpegCommand(prompt)
+}
